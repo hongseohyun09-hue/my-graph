@@ -158,14 +158,77 @@ st.info("이 기간 동안 일관객 합계가 가장 큰 5편의 관객 수가 
 
 
 # ============================================================
+# 그래프 3
+# ============================================================
+st.divider()
+st.header("3. 날짜별 10위권 일관객 합계")
+
+# 날짜별로 그날의 10위권 영화 일관객 합계 계산
+daily_total = (
+    df.groupby("날짜", as_index=False)["일관객"]
+    .sum()
+    .sort_values("날짜")
+)
+
+# 합계가 가장 컸던 날 3일
+top3_days = daily_total.nlargest(3, "일관객").sort_values("날짜")
+
+fig3 = px.area(
+    daily_total,
+    x="날짜",
+    y="일관객",
+    title="날짜별 10위권 일관객 합계",
+    labels={
+        "날짜": "날짜",
+        "일관객": "10위권 일관객 합계",
+    },
+    hover_data={
+        "날짜": "|%Y-%m-%d",
+        "일관객": ":,",
+    },
+)
+
+fig3.update_traces(
+    hovertemplate="날짜: %{x|%Y-%m-%d}<br>10위권 일관객 합계: %{y:,}명<extra></extra>"
+)
+
+# 합계가 가장 컸던 3일을 그래프 위에 표시
+fig3.add_scatter(
+    x=top3_days["날짜"],
+    y=top3_days["일관객"],
+    mode="markers+text",
+    text=[
+        f"{row.날짜.strftime('%Y-%m-%d')}<br>{row.일관객:,}명"
+        for _, row in top3_days.iterrows()
+    ],
+    textposition="top center",
+    marker=dict(size=9),
+    name="상위 3일",
+    hovertemplate="날짜: %{x|%Y-%m-%d}<br>합계: %{y:,}명<extra></extra>",
+    showlegend=False,
+)
+
+fig3.update_layout(
+    height=550,
+    margin=dict(l=20, r=20, t=60, b=20),
+    yaxis=dict(tickformat=","),
+)
+
+st.plotly_chart(fig3, use_container_width=True)
+
+st.markdown("**이 그래프로 알 수 있는 것:**")
+st.info("날짜별 10위권 영화의 전체 관객 규모와 관객이 특히 많이 몰렸던 날을 한눈에 확인할 수 있습니다.")
+
+
+# ============================================================
 # 앞으로 추가할 그래프 영역
 # ============================================================
 st.divider()
-st.header("3. 다음 그래프")
+st.header("4. 다음 그래프")
 st.caption("앞으로 시간에 따른 다른 영화 데이터 그래프를 이 구역에 추가할 수 있습니다.")
 
 # 그래프를 추가할 때 아래와 같은 형식으로 구역을 계속 확장하면 됩니다.
-# st.subheader("3-1. 그래프 제목")
+# st.subheader("4-1. 그래프 제목")
 # st.plotly_chart(...)
 # st.markdown("**이 그래프로 알 수 있는 것:**")
 # st.info("그래프에서 알 수 있는 내용을 한 문장으로 적습니다.")
